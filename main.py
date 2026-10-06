@@ -1,15 +1,8 @@
 from solver import solveSudoku
-from core.problemRandomizer import generate_random_sudoku as gen
-from core.binomal import generateSudokuClauses as custom_binomal
-from core.binary import generateSudokuClauses as custom_binary
+from core.generateSudokuProblem import generate_random_sudoku as gen
+from core.sudokuBuilder import getAvailableEncoders, getEncoderByID
 
 GRID_SAMPLES = {9, 16, 25, 36}
-
-encoders = [
-    {"id": 0, "name": "Binomial", "func": custom_binomal},
-    {"id": 1, "name": "Binary", "func": custom_binary}
-]
-
 
 def simulation(encoderFunc, encoderName, gridSize, iterations):
     print(f"\n[+] Running simulation {iterations} times | Encoder: {encoderName}")
@@ -62,9 +55,12 @@ if __name__ == "__main__":
         gridSize = 9
 
     # ENCODER
+    encoders = getAvailableEncoders()
     print("\nList of available encoders:")
+
     for enc in encoders:
         print(f"   [{enc['id']}] {enc['name']}")
+        
     print("   [-1] ALL (default)")
 
     try:
@@ -72,14 +68,7 @@ if __name__ == "__main__":
     except ValueError:
         choice = -1
 
-    encSelected = []
-    if choice == -1:
-        encSelected = encoders
-    else:
-        encSelected = [e for e in encoders if e["id"] == choice]
-        if not encSelected:
-            print("  -> Invalid choice, running all encoders.")
-            encSelected = encoders
+    encSelected = getEncoderByID(choice)
 
     # SIM AMOUNT
     try:
