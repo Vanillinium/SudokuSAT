@@ -1,7 +1,7 @@
 from functools import partial
 from pysat.card import EncType
 
-from core.encoderCustom import eoBinomal, eoBinary#, eoProduct
+from core.encoderCustom import eoBinomal, eoBinary, eoProduct
 from core.encoderPySATDefault import eoDefault
 
 from core.generateSudokuClauses import generateSudokuClauses
@@ -25,11 +25,11 @@ ENCODER_FACTORY = {
         "func": lambda grid: generateSudokuClauses(grid, partial(eoDefault, encType=EncType.seqcounter))
     },
 
-    # 3: {
-    #     "id": 3,
-    #     "name": "Product",
-    #     "func": lambda grid: generateSudokuClauses(grid, eoProduct)
-    # },
+    3: {
+        "id": 3,
+        "name": "Product",
+        "func": lambda grid: generateSudokuClauses(grid, eoProduct)
+    },
 
     4: {
         "id": 4,
@@ -48,5 +48,5 @@ def getEncoderByID(id):
     if id in ENCODER_FACTORY:
         return [ENCODER_FACTORY[id]]
 
-    print(f"  -> Invalid Encoder ID ({encoder_id}). Selecting ALL encoders.")
+    print(f"  -> Invalid Encoder ID ({id}). Selecting ALL encoders.")
     return list(ENCODER_FACTORY.values())
