@@ -19,8 +19,20 @@ def simulation(encoderFunc, encoderName, gridSize, iterations):
         currGrid = gen(gridSize)
 
         stats = solveSudoku(currGrid, encoderFunc)
-        if not stats or not stats.get("isSat", False):
-            return None
+
+        if not stats: return None
+
+        if stats.get("status") == "TIMEOUT":
+            print("Encoder TIMEOUT.")
+
+            return {
+                "encoder": encoderName,
+                "gridSize": stats["gridSize"],
+                "totalVar": stats["totalVar"],
+                "auxVar": stats["auxVar"],
+                "numClauses": stats["numClauses"],
+                "status": "TIMEOUT"
+            }
 
         totalEncTime += stats["encTime"]
         totalSolverTime += stats["solverTime"]
@@ -32,6 +44,7 @@ def simulation(encoderFunc, encoderName, gridSize, iterations):
         "totalVar": sampleStats["totalVar"],
         "auxVar": sampleStats["auxVar"],
         "numClauses": sampleStats["numClauses"],
+        "status": "COMPLETED",
         "avgEncodingTime": totalEncTime / totalRuns,
         "avgSolvingTime": totalSolverTime / totalRuns,
         "avgTotalTime": (totalEncTime + totalSolverTime) / totalRuns
@@ -63,12 +76,22 @@ if __name__ == "__main__":
         
     print("   [-1] ALL (default)")
 
-    try:
-        choice = int(input("\n[?] Input encoder (-1 to select all): "))
-    except ValueError:
-        choice = -1
+    raw = input("\n[?] Input encoder IDs (e.g. '0, 2, 4' or '-1' for all): ").strip()
 
-    encSelected = getEncoderByID(choice)
+    selectedID = []
+    if raw:
+        parts = raw.replace(",", " ").split()
+
+        for p in parts:
+            try:
+                selectedID.append(int(p))
+            except ValueError:
+                pass
+
+        
+    if not selectedID: selectedID = [-1] # default
+
+    encSelected = getEncoderByID(selectedID)
 
     # SIM AMOUNT
     try:
@@ -99,11 +122,18 @@ if __name__ == "__main__":
     print("               RESULTS                      ")
     print("="*50)
     print(f" Grid Size            : {res['gridSize']}")
+
     for res in results:
         print(f" - Encoder            : {res['encoder']}")
         print(f"   + Variable amount  : {res['totalVar']} (Aux: {res['auxVar']})")
         print(f"   + Clause amount    : {res['numClauses']}")
-        print(f"   + Avg encoding time: {res['avgEncodingTime'] * 1000:.4f} ms")
-        print(f"   + Avg solving time : {res['avgSolvingTime'] * 1000:.4f} ms")
-        print(f"   + Avg total time   : {res['avgTotalTime'] * 1000:.4f} ms")
+
+        if res.get("status") == "TIMEOUT":
+            print(f"   + Status: TIMEOUT (Exceeded 300 seconds.)")
+
+        else:
+            print(f"   + Avg encoding time: {res['avgEncodingTime'] * 1000:.4f} ms")
+            print(f"   + Avg solving time : {res['avgSolvingTime'] * 1000:.4f} ms")
+            print(f"   + Avg total time   : {res['avgTotalTime'] * 1000:.4f} ms")
+
         print("-" * 50)

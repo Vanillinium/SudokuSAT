@@ -42,11 +42,22 @@ ENCODER_FACTORY = {
 def getAvailableEncoders():
     return list(ENCODER_FACTORY.values())
 
-def getEncoderByID(id):
-    if id == -1:
+def getEncoderByID(ids):
+    if not ids or -1 in ids:
         return list(ENCODER_FACTORY.values())
-    if id in ENCODER_FACTORY:
-        return [ENCODER_FACTORY[id]]
 
-    print(f"  -> Invalid Encoder ID ({id}). Selecting ALL encoders.")
-    return list(ENCODER_FACTORY.values())
+    if isinstance(ids, int):
+        ids = [ids]
+
+    selected = []
+    for id in ids:
+        if id in ENCODER_FACTORY:
+            selected.append(ENCODER_FACTORY[id])
+        else:
+            print(f" -> Warning: ID {id} is invalid. Skipped.")  
+    
+    if not selected:
+        print(" -> No valid encoders selected. Selecting ALL encoders.")
+        return list(ENCODER_FACTORY.values())
+
+    return selected
